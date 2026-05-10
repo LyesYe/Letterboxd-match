@@ -44,15 +44,28 @@ async function fetchWatchlists(usernames: string[], origin: string) {
     )
   );
   const watchlists: WatchlistMovie[][] = [];
+  const validUsernames: string[] = [];  // confirmed real Letterboxd accounts (even if empty)
   const errors: string[] = [];
-  for (const r of results) {
-    if (r.status === "rejected" || r.value?.error) {
-      errors.push(r.status === "rejected" ? r.reason?.message : r.value.error);
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r.status === "rejected") {
+      errors.push(r.reason?.message ?? "Unknown error");
+      continue;
+    }
+    const val = r.value;
+    if (val?.status === "empty") {
+      // Real account, empty watchlist — track them but don't add to pool
+      validUsernames.push(usernames[i]);
+      errors.push(`@${usernames[i]}'s watchlist is empty — they were skipped.`);
+    } else if (val?.status === "private" || val?.error) {
+      errors.push(val.error ?? "Unknown error");
     } else {
-      watchlists.push(r.value.movies as WatchlistMovie[]);
+      // ok — has movies
+      watchlists.push(val.movies as WatchlistMovie[]);
+      validUsernames.push(usernames[i]);
     }
   }
-  return { watchlists, errors };
+  return { watchlists, validUsernames, errors };
 }
 
 export async function POST(req: NextRequest) {
@@ -61,14 +74,14 @@ export async function POST(req: NextRequest) {
   const { usernames, mode, seenIds }: { usernames: string[]; mode: MatchMode; seenIds: number[] } = await req.json();
   if (!usernames?.length) return NextResponse.json({ error: "At least one username is required." }, { status: 400 });
 
-  // Store usernames in background — fire-and-forget, never blocks the response
-  trackUsernames(usernames).catch(() => {});
-
   // Fetch watchlists and watched films in parallel
-  const [{ watchlists, errors }, watchedByUser] = await Promise.all([
+  const [{ watchlists, validUsernames, errors }, watchedByUser] = await Promise.all([
     fetchWatchlists(usernames, req.nextUrl.origin),
     fetchWatchedForUsers(usernames),
   ]);
+
+  // Only store usernames that actually have a valid Letterboxd watchlist
+  if (validUsernames.length) trackUsernames(validUsernames).catch(() => {});
 
   if (watchlists.length === 0) return NextResponse.json({ error: errors[0] ?? "Could not load any watchlists." }, { status: 400 });
 
