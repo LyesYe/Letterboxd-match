@@ -20,7 +20,7 @@ async function tmdbSearchLight(title: string, year: number | null) {
   const params = new URLSearchParams({ api_key: TMDB_KEY, query: title, language: "en-US", page: "1", include_adult: "false" });
   if (year) params.set("year", String(year));
   try {
-    const res  = await fetch(`${TMDB_BASE}/search/movie?${params}`);
+    const res  = await fetch(`${TMDB_BASE}/search/movie?${params}`, { next: { revalidate: 86400 } });
     if (!res.ok) return null;
     const data = await res.json();
     const r    = data.results?.[0];

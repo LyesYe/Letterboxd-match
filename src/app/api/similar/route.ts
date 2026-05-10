@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
   }
 
   const res = await fetch(
-    `${TMDB_BASE}/movie/${id}/similar?api_key=${TMDB_KEY}&language=en-US&page=1`
+    `${TMDB_BASE}/movie/${id}/similar?api_key=${TMDB_KEY}&language=en-US&page=1`,
+    { next: { revalidate: 86400 } }
   );
   if (!res.ok) {
     return NextResponse.json({ error: "Failed to fetch similar movies." }, { status: 502 });

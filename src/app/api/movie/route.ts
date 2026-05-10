@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
   }
 
   const res = await fetch(
-    `${TMDB_BASE}/movie/${id}?api_key=${TMDB_KEY}&language=en-US`
+    `${TMDB_BASE}/movie/${id}?api_key=${TMDB_KEY}&language=en-US`,
+    { next: { revalidate: 86400 } }
   );
   if (!res.ok) {
     return NextResponse.json({ error: "Movie not found." }, { status: 404 });

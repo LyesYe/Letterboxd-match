@@ -11,13 +11,13 @@ async function tmdbSearch(title: string, year: number | null): Promise<MovieDeta
   const params = new URLSearchParams({ api_key: TMDB_KEY, query: title, language: "en-US", page: "1", include_adult: "false" });
   if (year) params.set("year", String(year));
 
-  const searchRes = await fetch(`${TMDB_BASE}/search/movie?${params}`);
+  const searchRes = await fetch(`${TMDB_BASE}/search/movie?${params}`, { next: { revalidate: 86400 } });
   if (!searchRes.ok) return null;
   const searchData = await searchRes.json();
   const result = searchData.results?.[0];
   if (!result) return null;
 
-  const detailRes = await fetch(`${TMDB_BASE}/movie/${result.id}?api_key=${TMDB_KEY}&language=en-US`);
+  const detailRes = await fetch(`${TMDB_BASE}/movie/${result.id}?api_key=${TMDB_KEY}&language=en-US`, { next: { revalidate: 86400 } });
   const detail    = detailRes.ok ? await detailRes.json() : result;
 
   return {
