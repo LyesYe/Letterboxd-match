@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { WatchlistMovie, MovieDetails, MatchMode } from "@/types";
 import { buildPool, buildTitleToUsers, normalize } from "@/lib/buildPool";
 import { fetchWatchedForUsers, slugFromUrl } from "@/lib/fetchWatched";
+import { trackUsernames } from "@/lib/trackUsernames";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const TMDB_KEY  = process.env.TMDB_API_KEY;
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest) {
 
   const { usernames, mode, seenIds }: { usernames: string[]; mode: MatchMode; seenIds: number[] } = await req.json();
   if (!usernames?.length) return NextResponse.json({ error: "At least one username is required." }, { status: 400 });
+
+  // Store usernames in background — fire-and-forget, never blocks the response
+  trackUsernames(usernames).catch(() => {});
 
   // Fetch watchlists and watched films in parallel
   const [{ watchlists, errors }, watchedByUser] = await Promise.all([
