@@ -6,6 +6,7 @@ import MovieCard from "@/components/MovieCard";
 import ModeToggle from "@/components/ModeToggle";
 import SimilarMovies from "@/components/SimilarMovies";
 import MovieListSection from "@/components/MovieListSection";
+import FindBestie from "@/components/FindBestie";
 import { MovieDetails, MatchMode } from "@/types";
 import { SimilarMovie } from "@/app/api/similar/route";
 import { useUsernameHistory } from "@/hooks/useUsernameHistory";
@@ -313,6 +314,13 @@ export default function Home() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
+          </div>
+        )}
+
+        {/* ── Find Bestie ── */}
+        {filledUsernames.length > 0 && hasMounted && (
+          <div className="w-full max-w-2xl">
+            <FindBestie defaultUsername={filledUsernames[0]} />
           </div>
         )}
 
