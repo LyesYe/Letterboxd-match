@@ -9,35 +9,39 @@ export function getRedisCredentials() {
 async function redisCmd(cmd: unknown[]): Promise<unknown> {
   const { url, token } = getRedisCredentials();
   if (!url || !token) return null;
-  const res = await fetch(url, {
+  const res  = await fetch(url, {
     method:  "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body:    JSON.stringify(cmd),
   });
-  const data = await res.json();
-  return data.result;
+  return (await res.json()).result;
 }
 
+/**
+ * Add usernames to a sorted set scored by Unix timestamp.
+ * NX = only add if not already present (preserves original join date).
+ */
 export async function trackUsernames(usernames: string[]): Promise<void> {
   if (!usernames.length) return;
-  await redisCmd(["SADD", REDIS_KEY, ...usernames.map((u) => u.toLowerCase())]);
+  const now  = Math.floor(Date.now() / 1000);
+  const args = usernames.flatMap((u) => [now, u.toLowerCase()]);
+  // ZADD key NX score member [score member ...]
+  await redisCmd(["ZADD", REDIS_KEY, "NX", ...args]);
 }
 
-/** Cache a user's favorites for 7 days (86400 × 7 = 604800s) */
 export async function cacheFavorites(username: string, slugs: string[]): Promise<void> {
   if (!username || !slugs.length) return;
-  await redisCmd(["SETEX", `pickd:fav:${username}`, 604800, JSON.stringify(slugs)]);
+  await redisCmd(["SETEX", `pickd:fav:${username.toLowerCase()}`, 604800, JSON.stringify(slugs)]);
 }
 
-/** Get cached favorites for a user, or null if not cached */
 export async function getCachedFavorites(username: string): Promise<string[] | null> {
-  const result = await redisCmd(["GET", `pickd:fav:${username}`]);
+  const result = await redisCmd(["GET", `pickd:fav:${username.toLowerCase()}`]);
   if (!result || typeof result !== "string") return null;
   try { return JSON.parse(result); } catch { return null; }
 }
 
-/** Get all stored usernames */
 export async function getAllUsernames(): Promise<string[]> {
-  const result = await redisCmd(["SMEMBERS", REDIS_KEY]);
-  return Array.isArray(result) ? result as string[] : [];
+  // ZREVRANGE returns newest-first
+  const result = await redisCmd(["ZREVRANGE", REDIS_KEY, 0, -1]);
+  return Array.isArray(result) ? (result as string[]) : [];
 }
