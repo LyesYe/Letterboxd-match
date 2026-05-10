@@ -19,7 +19,7 @@ const MODES = [
   },
   {
     key: "intersection" as MatchMode,
-    label: "Everyone",
+    label: "Intersection",
     tagline: "Perfect match",
     description: "Only movies on every watchlist",
     color: "#00E054",

@@ -25,6 +25,7 @@
 
 html, body {
   background-color: var(--lb-dark);
+  background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,224,84,0.06) 0%, transparent 70%);
   color: var(--lb-text-bright);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   min-height: 100vh;

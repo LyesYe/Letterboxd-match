@@ -5,11 +5,11 @@ import "./globals.css";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Letterboxd Movie Matcher",
-  description: "Find the perfect movie to watch with friends using your Letterboxd watchlists.",
+  title: "Pickd — Pick a film, not a fight.",
+  description: "Swipe or match your Letterboxd watchlists with friends and pick a film to watch tonight.",
   openGraph: {
-    title: "Letterboxd Movie Matcher",
-    description: "Find the perfect movie to watch with friends using your Letterboxd watchlists.",
+    title: "Pickd",
+    description: "Pick a film, not a fight.",
   },
 };
 

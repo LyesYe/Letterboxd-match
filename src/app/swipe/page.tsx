@@ -10,6 +10,7 @@ import Link from "next/link";
 import { PoolMovie, MatchMode } from "@/types";
 import { useUsernameHistory } from "@/hooks/useUsernameHistory";
 import UserBadges from "@/components/UserBadges";
+import { PickdMark } from "@/components/PickdLogo";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 
@@ -122,7 +123,7 @@ function SetupScreen({ usernames, setUsernames, mode, setMode, onStart, error, u
 
   const MODES: { key: MatchMode; label: string; sub: string; color: string }[] = [
     { key: "union",        label: "Union",    sub: "All lists combined",     color: "#FF8000" },
-    { key: "intersection", label: "Everyone", sub: "Only on every list",     color: "#00E054" },
+    { key: "intersection", label: "Intersection", sub: "Only on every list",     color: "#00E054" },
     ...(filledCount >= 3 ? [{ key: "partial" as MatchMode, label: "Any 2", sub: "At least 2 lists", color: "#40BCF4" }] : []),
   ];
 
@@ -134,9 +135,14 @@ function SetupScreen({ usernames, setUsernames, mode, setMode, onStart, error, u
 
       <div className="w-full max-w-sm space-y-7">
         <div className="text-center">
-          <div className="text-5xl mb-3">🃏</div>
-          <h1 className="text-3xl font-bold text-[#e8ecf0] tracking-tight">Swipe Mode</h1>
-          <p className="text-[#99AABB] text-sm mt-1">Right to like · Left to skip</p>
+          <div className="flex items-center justify-center gap-2.5 mb-2">
+            <PickdMark size={40} />
+            <span className="text-3xl font-bold text-[#e8ecf0] tracking-tight">
+              Pick<span className="text-[#00E054]">d</span>
+            </span>
+          </div>
+          <p className="text-[#99AABB] text-sm font-medium">Swipe Mode</p>
+          <p className="text-[#99AABB]/50 text-xs mt-1">Right to like · Left to skip</p>
         </div>
 
         <div ref={containerRef} className="space-y-2">

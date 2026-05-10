@@ -109,7 +109,7 @@ export default function MovieListSection({ usernames, userCount, onPick }: Props
 
   const modes: { key: MatchMode; label: string; color: string }[] = [
     { key: "union", label: "Union", color: "#FF8000" },
-    { key: "intersection", label: "Everyone", color: "#00E054" },
+    { key: "intersection", label: "Intersection", color: "#00E054" },
     ...(userCount >= 3 ? [{ key: "partial" as MatchMode, label: "Any 2", color: "#40BCF4" }] : []),
   ];
 
