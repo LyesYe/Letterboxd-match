@@ -20,7 +20,7 @@ async function redisCmd(cmd: unknown[]): Promise<unknown> {
 
 export async function trackUsernames(usernames: string[]): Promise<void> {
   if (!usernames.length) return;
-  await redisCmd(["SADD", REDIS_KEY, ...usernames]);
+  await redisCmd(["SADD", REDIS_KEY, ...usernames.map((u) => u.toLowerCase())]);
 }
 
 /** Cache a user's favorites for 7 days (86400 × 7 = 604800s) */

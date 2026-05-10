@@ -7,10 +7,10 @@ import { useUsernameHistory } from "@/hooks/useUsernameHistory";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 
-interface Props { defaultUsername?: string; }
+interface Props { defaultUsername?: string; defaultOpen?: boolean; }
 
-export default function FindBestie({ defaultUsername = "" }: Props) {
-  const [open, setOpen]             = useState(false);
+export default function FindBestie({ defaultUsername = "", defaultOpen = false }: Props) {
+  const [open, setOpen]             = useState(defaultOpen);
   const [username, setUsername]     = useState(defaultUsername);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState("");
