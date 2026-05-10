@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes --name letterboxd-reco)",
+      "Read(//d/Codes/**)",
+      "Bash(npx create-next-app@latest letterboxd-reco-tmp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes)",
+      "Bash(Copy-Item -Path \"letterboxd-reco-tmp\\\\*\" -Destination \"LetterboxdReco\\\\\" -Recurse -Force && Copy-Item -Path \"letterboxd-reco-tmp\\\\.gitignore\" -Destination \"LetterboxdReco\\\\.gitignore\" -Force && Remove-Item -Recurse -Force \"letterboxd-reco-tmp\" 2>&1; echo \"Done\")",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -L -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://letterboxd.com/LyesYe/watchlist/rss/\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' https://letterboxd.com/LyesYe/watchlist/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -L \"https://letterboxd.com/LyesYe/watchlist/rss/\")",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' https://letterboxd.com/LyesYe/watchlist/)",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' https://letterboxd.com/LyesYe/watchlist/)",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' https://letterboxd.com/LyesYe/films/)"
+    ]
+  }
+}
