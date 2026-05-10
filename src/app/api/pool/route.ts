@@ -77,19 +77,30 @@ export async function POST(req: NextRequest) {
   );
 
   const watchlists: WatchlistMovie[][] = [];
-  for (const r of rawResults) {
-    if (r.status === "fulfilled" && !r.value?.error) watchlists.push(r.value.movies as WatchlistMovie[]);
-  }
-  if (watchlists.length === 0) return NextResponse.json({ error: "Could not load any watchlists." }, { status: 400 });
+  const validUsernames: string[] = [];
 
-  const titleToUsers = buildTitleToUsers(usernames, watchlists);
+  for (let i = 0; i < rawResults.length; i++) {
+    const r = rawResults[i];
+    if (r.status === "rejected") continue;
+    const val = r.value;
+    // Only include users with actual movies — skip empty, private, not_found
+    if (val?.status === "ok" && Array.isArray(val.movies) && val.movies.length > 0) {
+      watchlists.push(val.movies as WatchlistMovie[]);
+      validUsernames.push(usernames[i]);
+    }
+  }
+
+  if (watchlists.length === 0) return NextResponse.json({ error: "Could not load any watchlists with movies." }, { status: 400 });
+
+  // Use validUsernames (not original usernames) so indices align with watchlists
+  const titleToUsers = buildTitleToUsers(validUsernames, watchlists);
   const pool         = buildPool(watchlists, mode).slice(0, MAX_MOVIES);
   if (pool.length === 0) return NextResponse.json({ movies: [], total: 0 });
 
   // TMDB enrichment and watched-films fetch run in parallel
   const [enriched, watchedByUser] = await Promise.all([
     enrichBatch(pool, titleToUsers),
-    fetchWatchedForUsers(usernames),
+    fetchWatchedForUsers(validUsernames),
   ]);
 
   // Merge: stamp each movie with which users have watched it
@@ -97,7 +108,7 @@ export async function POST(req: NextRequest) {
     const slug = slugFromUrl(m.letterboxdUrl);
     return {
       ...m,
-      watchedByUsers: slug ? usernames.filter((u) => watchedByUser.get(u)?.has(slug)) : [],
+      watchedByUsers: slug ? validUsernames.filter((u) => watchedByUser.get(u)?.has(slug)) : [],
     };
   });
 

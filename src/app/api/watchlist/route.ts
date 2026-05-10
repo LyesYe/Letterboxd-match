@@ -86,7 +86,21 @@ export async function GET(req: NextRequest) {
           { status: 403 }
         );
       }
-      // Page loaded fine, account exists, watchlist just has no movies
+
+      // Verify the user actually exists by hitting their profile page.
+      // Some Letterboxd URLs return 200 even for non-existent users.
+      const profileRes = await fetch(
+        `https://letterboxd.com/${encodeURIComponent(username)}/`,
+        { headers: BROWSER_HEADERS }
+      );
+      if (!profileRes.ok) {
+        return NextResponse.json(
+          { error: `"${username}" doesn't exist on Letterboxd.`, status: "not_found" },
+          { status: 404 }
+        );
+      }
+
+      // Profile exists, watchlist is just empty
       return NextResponse.json(
         { username, movies: [], count: 0, status: "empty" },
         { status: 200 }
