@@ -47,7 +47,8 @@
       "Bash(curl -s -L -H 'User-Agent: TVTime/5.0' 'https://api.tvtime.com/v1/user/lyesye/movies?status=not_watched')",
       "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Accept: application/json' https://api.tvtime.com/v1/user/lyesye)",
       "Bash(curl -s -w '\\\\n%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Accept: application/json' https://api.tvtime.com/v1/login)",
-      "Bash(curl -s -w '\\\\n%{http_code}' -L -H 'Content-Type: application/json' -H 'trakt-api-version: 2' -H 'trakt-api-key: e77c1d0e70b3e3a78f0fb4a9f0c3c8d3a1b2c4d5e6f7a8b9' https://api.trakt.tv/users/lyesye/watchlist/movies)"
+      "Bash(curl -s -w '\\\\n%{http_code}' -L -H 'Content-Type: application/json' -H 'trakt-api-version: 2' -H 'trakt-api-key: e77c1d0e70b3e3a78f0fb4a9f0c3c8d3a1b2c4d5e6f7a8b9' https://api.trakt.tv/users/lyesye/watchlist/movies)",
+      "Bash(npx next *)"
     ]
   }
 }
