@@ -69,7 +69,7 @@ function slugFromUrl(url: string): string {
 
 export async function POST(req: NextRequest) {
   const { usernames, selcard = "all" }: { usernames: string[]; selcard?: string } = await req.json();
-  if (!usernames?.length) return NextResponse.json({ error: "Username required." }, { status: 400 });
+  // usernames can be empty — in that case, return all movies with no watchlist matching
 
   // Fetch all in parallel — week + today + watchlists
   const [cinemaMovies, todayMoviesRaw, ...watchlists] = await Promise.all([

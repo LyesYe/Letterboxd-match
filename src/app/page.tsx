@@ -8,6 +8,7 @@ import SimilarMovies from "@/components/SimilarMovies";
 import MovieListSection from "@/components/MovieListSection";
 import FindBestie from "@/components/FindBestie";
 import ParisCinema, { CalendarSection } from "@/components/ParisCinema";
+import ParisAllMovies from "@/components/ParisAllMovies";
 import { MovieDetails, MatchMode } from "@/types";
 import { SimilarMovie } from "@/app/api/similar/route";
 import { useUsernameHistory } from "@/hooks/useUsernameHistory";
@@ -26,7 +27,7 @@ export default function Home() {
   const [exhausted, setExhausted] = useState(false);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
-  const [appMode, setAppMode] = useState<null | "match" | "bestie" | "cinema">(null);
+  const [appMode, setAppMode] = useState<null | "match" | "bestie" | "cinema" | "paris-all">(null);
   useEffect(() => setHasMounted(true), []);
   const { history, addUsernames, remove: removeFromHistory } = useUsernameHistory();
 
@@ -163,12 +164,12 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-[#99AABB] text-base md:text-lg leading-relaxed max-w-lg mx-auto">
-                Two ways to use Pickd — choose what you need tonight.
+                Four ways to use Pickd — choose what you need tonight.
               </p>
             </section>
 
             {/* Mode cards */}
-            <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-5 pb-16">
+            <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-5 pb-16">
 
               {/* Movie Match card */}
               <button onClick={() => setAppMode("match")}
@@ -260,6 +261,37 @@ export default function Home() {
 
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#E879F9] group-hover:gap-3 transition-all">
                   Find my bestie
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </button>
+
+              {/* Paris This Week card */}
+              <button onClick={() => setAppMode("paris-all")}
+                className="group relative flex flex-col text-left p-7 rounded-3xl border border-[#2c3440] bg-[#1c2228]
+                  hover:border-[#F59E0B]/40 hover:bg-[#F59E0B]/5 active:scale-[0.98]
+                  transition-all duration-200 overflow-hidden"
+                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-3xl"
+                  style={{ boxShadow: "inset 0 0 40px rgba(245,158,11,0.06)" }} />
+
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.25)" }}>
+                  <DiscoverIconLg color="#F59E0B" />
+                </div>
+
+                <h2 className="text-xl font-bold text-[#e8ecf0] mb-2">Paris This Week</h2>
+                <p className="text-sm text-[#99AABB]/80 leading-relaxed mb-6 flex-1">
+                  Browse every film playing in Paris cinemas this week — no account needed. Filter by UGC Illimité.
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 mb-6">
+                  {["All films at a glance", "Today highlighted", "UGC filter"].map((t) => (
+                    <span key={t} className="text-[10px] px-2.5 py-1 rounded-full bg-[#F59E0B]/8 text-[#F59E0B]/80 border border-[#F59E0B]/15">{t}</span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#F59E0B] group-hover:gap-3 transition-all">
+                  What&apos;s on
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </button>
@@ -378,6 +410,13 @@ export default function Home() {
           <CinemaModeSection onBack={() => setAppMode(null)} />
         )}
 
+        {/* ══════════════════════════════════
+            PARIS ALL mode
+        ══════════════════════════════════ */}
+        {appMode === "paris-all" && (
+          <ParisAllSection onBack={() => setAppMode(null)} />
+        )}
+
       </main>
     </div>
   );
@@ -420,6 +459,36 @@ function CinemaModeSection({ onBack }: { onBack: () => void }) {
       )}
 
       <div className="h-8" />
+    </>
+  );
+}
+
+/* ── Paris All mode: full-width movie grid, auto-fetches on mount ── */
+function ParisAllSection({ onBack }: { onBack: () => void }) {
+  return (
+    <>
+      <div className="w-full max-w-5xl pt-8 pb-2 px-2">
+        <button onClick={onBack}
+          className="flex items-center gap-1.5 text-sm text-[#99AABB]/60 hover:text-[#e8ecf0] transition-colors mb-6">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.25)" }}>
+            <DiscoverIconLg color="#F59E0B" />
+          </div>
+          <div>
+            <h2 className="font-bold text-[#e8ecf0]">Paris This Week</h2>
+            <p className="text-xs text-[#99AABB]/60 mt-0.5">All films at the cinema in Paris — updated daily</p>
+          </div>
+        </div>
+
+        <ParisAllMovies />
+      </div>
+      <div className="h-16" />
     </>
   );
 }
@@ -470,6 +539,15 @@ function BestieIconLg({ color }: { color: string }) {
       <circle cx="9" cy="7" r="4"/>
       <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
       <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  );
+}
+
+function DiscoverIconLg({ color }: { color: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
     </svg>
   );
 }

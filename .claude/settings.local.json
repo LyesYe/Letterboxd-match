@@ -33,7 +33,21 @@
       "Bash(curl -s -o /dev/null -w '%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Referer: https://paris-cine.info/' 'https://paris-cine.info/get_poster.php?id=4063')",
       "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: application/json, */*' -H 'Referer: https://paris-cine.info/' 'https://paris-cine.info/get_seances.php?id=4063&selday=all&selcard=all&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=')",
       "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: application/json, */*' -H 'Referer: https://paris-cine.info/' 'https://paris-cine.info/get_pcitheatre.php?id=4063&selday=all&selcard=all&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=')",
-      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: application/json, */*' -H 'Referer: https://paris-cine.info/' 'https://paris-cine.info/get_pcishowtimes.php?id=4063&selday=all&selcard=all&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=')"
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: application/json, */*' -H 'Referer: https://paris-cine.info/' 'https://paris-cine.info/get_pcishowtimes.php?id=4063&selday=all&selcard=all&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=')",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' https://www.tvtime.com)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' https://www.tvtime.com/u/lyesye)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' https://www.tvtime.com/user/lyesye)",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' https://www.tvtime.com)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -H 'User-Agent: Mozilla/5.0' https://api.tvtime.com/v1/user/lyesye/movies/watchlist)",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0' https://api.tvtime.com/v1/user/lyesye)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' https://side-api.tvtime.com/v1/users/lyesye/movies/watchlist)",
+      "Bash(curl -s -L -H 'User-Agent: TVTime/1.0' 'https://api.tvtime.com/v2/users/lyesye/movies?type=watchlist')",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/124.0.0.0 Safari/537.36' https://side-api.tvtime.com/v1/users/lyesye/movies/watchlist)",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0' -H 'Accept: application/json' 'https://api2.tozelabs.com/v2/user/lyesye/movies?type=watchlist')",
+      "Bash(curl -s -L -H 'User-Agent: TVTime/5.0' 'https://api.tvtime.com/v1/user/lyesye/movies?status=not_watched')",
+      "Bash(curl -s -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Accept: application/json' https://api.tvtime.com/v1/user/lyesye)",
+      "Bash(curl -s -w '\\\\n%{http_code}' -L -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36' -H 'Accept: application/json' https://api.tvtime.com/v1/login)",
+      "Bash(curl -s -w '\\\\n%{http_code}' -L -H 'Content-Type: application/json' -H 'trakt-api-version: 2' -H 'trakt-api-key: e77c1d0e70b3e3a78f0fb4a9f0c3c8d3a1b2c4d5e6f7a8b9' https://api.trakt.tv/users/lyesye/watchlist/movies)"
     ]
   }
 }
