@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MovieDetails, MatchMode } from "@/types";
 import UserBadges from "@/components/UserBadges";
+import CinemaButton, { slugFromLetterboxdUrl } from "@/components/CinemaButton";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 
@@ -142,6 +143,9 @@ export default function MovieCard({ movie, poolSize, mode, foundInUsers, allUser
             >
               TMDB →
             </a>
+            {movie.letterboxdUrl && (
+              <CinemaButton lbSlug={slugFromLetterboxdUrl(movie.letterboxdUrl)} />
+            )}
           </div>
         </div>
       </div>

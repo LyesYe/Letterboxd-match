@@ -7,6 +7,7 @@ import ModeToggle from "@/components/ModeToggle";
 import SimilarMovies from "@/components/SimilarMovies";
 import MovieListSection from "@/components/MovieListSection";
 import FindBestie from "@/components/FindBestie";
+import ParisCinema, { CalendarSection } from "@/components/ParisCinema";
 import { MovieDetails, MatchMode } from "@/types";
 import { SimilarMovie } from "@/app/api/similar/route";
 import { useUsernameHistory } from "@/hooks/useUsernameHistory";
@@ -25,7 +26,7 @@ export default function Home() {
   const [exhausted, setExhausted] = useState(false);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
-  const [appMode, setAppMode] = useState<null | "match" | "bestie">(null);
+  const [appMode, setAppMode] = useState<null | "match" | "bestie" | "cinema">(null);
   useEffect(() => setHasMounted(true), []);
   const { history, addUsernames, remove: removeFromHistory } = useUsernameHistory();
 
@@ -167,7 +168,7 @@ export default function Home() {
             </section>
 
             {/* Mode cards */}
-            <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-5 pb-16">
+            <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-5 pb-16">
 
               {/* Movie Match card */}
               <button onClick={() => setAppMode("match")}
@@ -197,6 +198,37 @@ export default function Home() {
 
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#00E054] group-hover:gap-3 transition-all">
                   Start matching
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </button>
+
+              {/* Paris Cinema card */}
+              <button onClick={() => setAppMode("cinema")}
+                className="group relative flex flex-col text-left p-7 rounded-3xl border border-[#2c3440] bg-[#1c2228]
+                  hover:border-[#40BCF4]/40 hover:bg-[#40BCF4]/5 active:scale-[0.98]
+                  transition-all duration-200 overflow-hidden"
+                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-3xl"
+                  style={{ boxShadow: "inset 0 0 40px rgba(64,188,244,0.06)" }} />
+
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: "rgba(64,188,244,0.12)", border: "1px solid rgba(64,188,244,0.25)" }}>
+                  <CinemaIconLg color="#40BCF4" />
+                </div>
+
+                <h2 className="text-xl font-bold text-[#e8ecf0] mb-2">Paris Cinemas</h2>
+                <p className="text-sm text-[#99AABB]/80 leading-relaxed mb-6 flex-1">
+                  Check which films from your Letterboxd watchlist are playing in Paris cinemas this week.
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 mb-6">
+                  {["This week's schedule", "Watchlist cross-check", "Session links"].map((t) => (
+                    <span key={t} className="text-[10px] px-2.5 py-1 rounded-full bg-[#40BCF4]/8 text-[#40BCF4]/80 border border-[#40BCF4]/15">{t}</span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#40BCF4] group-hover:gap-3 transition-all">
+                  Check cinemas
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </button>
@@ -317,6 +349,7 @@ export default function Home() {
                   onPick={(m) => { setMovie(m); setFoundInUsers([]); setSeenIds((prev) => [...prev, m.id]); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
               </div>
             )}
+
             <div className="h-16" />
           </>
         )}
@@ -338,8 +371,56 @@ export default function Home() {
           </>
         )}
 
+        {/* ══════════════════════════════════
+            PARIS CINEMA mode
+        ══════════════════════════════════ */}
+        {appMode === "cinema" && (
+          <CinemaModeSection onBack={() => setAppMode(null)} />
+        )}
+
       </main>
     </div>
+  );
+}
+
+/* ── Cinema mode: form card (narrow) + calendar (full width) ── */
+function CinemaModeSection({ onBack }: { onBack: () => void }) {
+  const [calData, setCalData] = useState<{ matches: import("@/app/api/paris-cinema/route").CinemaMatch[]; selcard: string } | null>(null);
+
+  return (
+    <>
+      {/* Back + form card */}
+      <div className="w-full max-w-xl pt-8 pb-2">
+        <button onClick={onBack}
+          className="flex items-center gap-1.5 text-sm text-[#99AABB]/60 hover:text-[#e8ecf0] transition-colors mb-6">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div className="rounded-3xl border border-[#2c3440] bg-[#1c2228] p-6 md:p-8"
+          style={{ boxShadow: "0 0 0 1px rgba(64,188,244,0.07), 0 24px 60px rgba(0,0,0,0.45)" }}>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(64,188,244,0.12)", border: "1px solid rgba(64,188,244,0.25)" }}>
+              <CinemaIconLg color="#40BCF4" />
+            </div>
+            <div>
+              <h2 className="font-bold text-[#e8ecf0]">Paris Cinemas This Week</h2>
+              <p className="text-xs text-[#99AABB]/60 mt-0.5">Enter your username to check your watchlist</p>
+            </div>
+          </div>
+          <ParisCinema onDataLoaded={setCalData} />
+        </div>
+      </div>
+
+      {/* Calendar — full width, below the card */}
+      {calData && calData.matches.length > 0 && (
+        <div className="w-full max-w-5xl pb-8">
+          <CalendarSection matches={calData.matches} selcard={calData.selcard} />
+        </div>
+      )}
+
+      <div className="h-8" />
+    </>
   );
 }
 
@@ -369,6 +450,15 @@ function FilmIcon({ color }: { color: string }) {
       <line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/>
       <line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/>
       <line x1="17" y1="7" x2="22" y2="7"/>
+    </svg>
+  );
+}
+
+function CinemaIconLg({ color }: { color: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 4h20v16H2z"/><path d="M8 4v16"/><path d="M16 4v16"/><path d="M2 12h20"/>
+      <path d="M2 8h4"/><path d="M18 8h4"/><path d="M2 16h4"/><path d="M18 16h4"/>
     </svg>
   );
 }

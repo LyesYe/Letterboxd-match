@@ -11,6 +11,7 @@ import { PoolMovie, MatchMode } from "@/types";
 import { useUsernameHistory } from "@/hooks/useUsernameHistory";
 import UserBadges from "@/components/UserBadges";
 import { PickdMark } from "@/components/PickdLogo";
+import CinemaButton, { slugFromLetterboxdUrl } from "@/components/CinemaButton";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 
@@ -617,6 +618,11 @@ function ResultsScreen({ liked, usernames, onRestart, onReshuffle }: {
                           <UserBadges usernames={usernames} foundInUsers={m.foundInUsers ?? []} watchedByUsers={m.watchedByUsers ?? []} />
                         )}
                       </div>
+                      {m.letterboxdUrl && (
+                        <div className="mt-1">
+                          <CinemaButton lbSlug={slugFromLetterboxdUrl(m.letterboxdUrl)} />
+                        </div>
+                      )}
                     </div>
                   </button>
                 );

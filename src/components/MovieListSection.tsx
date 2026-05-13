@@ -4,6 +4,8 @@ import { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import { PoolMovie, MatchMode, MovieDetails } from "@/types";
 import UserBadges, { userColor } from "@/components/UserBadges";
+import { slugFromLetterboxdUrl } from "@/components/CinemaButton";
+import CinemaSessionModal, { CinemaMovie } from "@/components/CinemaSessionModal";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p";
 
@@ -300,9 +302,9 @@ export default function MovieListSection({ usernames, userCount, onPick }: Props
                 {movies.length === 0 ? "No movies found." : "No movies match your filters."}
               </p>
             ) : view === "grid" ? (
-              <GridView movies={filtered} usernames={usernames} pickingId={pickingId} onPick={handlePick} />
+              <GridView movies={filtered} usernames={usernames} />
             ) : (
-              <ListView movies={filtered} usernames={usernames} pickingId={pickingId} onPick={handlePick} />
+              <ListView movies={filtered} usernames={usernames} />
             )}
           </div>
         </div>
@@ -311,86 +313,116 @@ export default function MovieListSection({ usernames, userCount, onPick }: Props
   );
 }
 
+/* ── Shared cinema check hook ── */
+// pciId = -1 is the sentinel for "checked but not playing" — modal shows "Pas de séance"
+function useCinemaCard(slug: string, fallback: { title: string; lbUrl: string }) {
+  const [state, setState]         = useState<"idle" | "loading" | "found" | "not_found">("idle");
+  const [movie, setMovie]         = useState<CinemaMovie | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleClick = useCallback(async () => {
+    if (state === "found" || state === "not_found") { setModalOpen(true); return; }
+    if (state !== "idle" || !slug) return;
+    setState("loading");
+    try {
+      const res  = await fetch(`/api/paris-cinema/check?slug=${encodeURIComponent(slug)}`);
+      const data = await res.json();
+      if (data.found) {
+        setMovie(data.movie);
+        setState("found");
+      } else {
+        // Create a minimal placeholder so the modal can still open
+        setMovie({ pciId: -1, title: fallback.title, year: "", duration: "", director: "", copies: 0, lbUrl: fallback.lbUrl, pciUrl: "", posterUrl: "" });
+        setState("not_found");
+      }
+      setModalOpen(true);
+    } catch { setState("not_found"); }
+  }, [slug, state, fallback.title, fallback.lbUrl]);
+
+  return { state, movie, modalOpen, handleClick, setModalOpen };
+}
+
 /* ── Grid view ── */
-function GridView({ movies, usernames, pickingId, onPick }: {
+function GridView({ movies, usernames }: {
   movies: PoolMovie[];
   usernames: string[];
-  pickingId: number | null;
-  onPick: (m: PoolMovie) => void;
 }) {
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
       {movies.map((m) => {
-        const posterUrl = m.posterPath ? `${TMDB_IMG}/w185${m.posterPath}` : null;
+        const posterUrl  = m.posterPath ? `${TMDB_IMG}/w185${m.posterPath}` : null;
         const ratingColor = m.tmdbRating >= 7.5 ? "#00E054" : m.tmdbRating >= 6 ? "#FF8000" : "#99AABB";
-        const isPicking = pickingId === m.tmdbId;
+        const slug = slugFromLetterboxdUrl(m.letterboxdUrl);
         return (
-          <button
-            key={m.tmdbId ?? m.title}
-            onClick={() => onPick(m)}
-            disabled={!m.tmdbId || isPicking}
-            className="group text-left focus:outline-none disabled:opacity-50"
-            title={m.title}
-          >
-            <div
-              className="relative rounded-lg overflow-hidden border border-[#2c3440]
-                group-hover:border-[#99AABB]/40 transition-all duration-200"
-              style={{ aspectRatio: "2/3" }}
-            >
-              {posterUrl ? (
-                <Image src={posterUrl} alt={m.title} fill sizes="120px" className="object-cover
-                  transition-transform duration-300 group-hover:scale-105" />
-              ) : (
-                <div className="w-full h-full bg-[#14181C] flex items-center justify-center text-2xl">🎬</div>
-              )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200
-                flex items-center justify-center">
-                {isPicking ? (
-                  <span className="opacity-100 text-white text-xs font-semibold bg-black/70 px-2 py-1 rounded-full">
-                    Loading…
-                  </span>
-                ) : (
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                    text-white text-xs font-semibold bg-black/70 px-2 py-1 rounded-full">
-                    Pick this
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="mt-1.5 px-0.5">
-              <p className="text-[11px] font-semibold text-[#e8ecf0] line-clamp-2 leading-tight group-hover:text-white transition-colors">
-                {m.title}
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                {m.year && <span className="text-[10px] text-[#99AABB]/60">{m.year}</span>}
-                {m.tmdbRating > 0 && (
-                  <span className="text-[10px] font-semibold" style={{ color: ratingColor }}>★ {m.tmdbRating.toFixed(1)}</span>
-                )}
-                <UserBadges usernames={usernames} foundInUsers={m.foundInUsers} watchedByUsers={m.watchedByUsers} />
-              </div>
-            </div>
-          </button>
+          <GridCard key={m.tmdbId ?? m.title} m={m} posterUrl={posterUrl} ratingColor={ratingColor} slug={slug} usernames={usernames} />
         );
       })}
     </div>
   );
 }
 
+function GridCard({ m, posterUrl, ratingColor, slug, usernames }: {
+  m: PoolMovie; posterUrl: string | null; ratingColor: string; slug: string; usernames: string[];
+}) {
+  const { state, movie, modalOpen, handleClick, setModalOpen } = useCinemaCard(slug, { title: m.title, lbUrl: m.letterboxdUrl });
+  return (
+    <>
+      <button onClick={handleClick} className="group flex flex-col text-left w-full focus:outline-none" title={m.title}>
+        <div className="relative rounded-lg overflow-hidden border border-[#2c3440]
+          group-hover:border-[#40BCF4]/40 transition-all duration-200 w-full" style={{ aspectRatio: "2/3" }}>
+          {posterUrl
+            ? <Image src={posterUrl} alt={m.title} fill sizes="120px" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+            : <div className="w-full h-full bg-[#14181C] flex items-center justify-center text-2xl">🎬</div>
+          }
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-[10px] font-semibold bg-black/70 px-2 py-1 rounded-full">
+              {state === "loading" ? "…" : state === "not_found" ? "Pas en salle" : "🎬 Séances"}
+            </span>
+          </div>
+          {state === "found" && (
+            <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#40BCF4]" />
+          )}
+        </div>
+        <div className="mt-1.5 px-0.5">
+          <p className="text-[11px] font-semibold text-[#e8ecf0] line-clamp-2 leading-tight group-hover:text-white transition-colors">{m.title}</p>
+          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+            {m.year && <span className="text-[10px] text-[#99AABB]/60">{m.year}</span>}
+            {m.tmdbRating > 0 && <span className="text-[10px] font-semibold" style={{ color: ratingColor }}>★ {m.tmdbRating.toFixed(1)}</span>}
+            <UserBadges usernames={usernames} foundInUsers={m.foundInUsers} watchedByUsers={m.watchedByUsers} />
+          </div>
+        </div>
+      </button>
+      {modalOpen && movie && <CinemaSessionModal movie={movie} onClose={() => setModalOpen(false)} />}
+    </>
+  );
+}
+
 /* ── List view ── */
-function ListView({ movies, usernames, pickingId, onPick }: {
+function ListView({ movies, usernames }: {
   movies: PoolMovie[];
   usernames: string[];
-  pickingId: number | null;
-  onPick: (m: PoolMovie) => void;
 }) {
   return (
     <div className="flex flex-col divide-y divide-[#2c3440]">
       {movies.map((m) => {
         const posterUrl = m.posterPath ? `${TMDB_IMG}/w92${m.posterPath}` : null;
         const ratingColor = m.tmdbRating >= 7.5 ? "#00E054" : m.tmdbRating >= 6 ? "#FF8000" : "#99AABB";
-        const isPicking = pickingId === m.tmdbId;
+        const slug = slugFromLetterboxdUrl(m.letterboxdUrl);
         return (
-          <div key={m.tmdbId ?? m.title} className="flex items-center gap-3 py-2.5 group">
+          <ListRow key={m.tmdbId ?? m.title} m={m} posterUrl={posterUrl} ratingColor={ratingColor} slug={slug} usernames={usernames} />
+        );
+      })}
+    </div>
+  );
+}
+
+function ListRow({ m, posterUrl, ratingColor, slug, usernames }: {
+  m: PoolMovie; posterUrl: string | null; ratingColor: string; slug: string; usernames: string[];
+}) {
+  const { state, movie, modalOpen, handleClick, setModalOpen } = useCinemaCard(slug, { title: m.title, lbUrl: m.letterboxdUrl });
+  return (
+    <>
+      <div className="flex items-center gap-3 py-2.5 group">
             {/* Poster thumbnail */}
             <div className="flex-shrink-0 w-10 rounded overflow-hidden border border-[#2c3440]" style={{ aspectRatio: "2/3" }}>
               {posterUrl ? (
@@ -400,9 +432,9 @@ function ListView({ movies, usernames, pickingId, onPick }: {
               )}
             </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#e8ecf0] leading-tight line-clamp-1">{m.title}</p>
+            {/* Info — clickable to check cinema */}
+            <button onClick={handleClick} className="flex-1 min-w-0 text-left group/row focus:outline-none">
+              <p className="text-sm font-semibold text-[#e8ecf0] leading-tight line-clamp-1 group-hover/row:text-white transition-colors">{m.title}</p>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                 {m.year && <span className="text-xs text-[#99AABB]/60">{m.year}</span>}
                 {m.tmdbRating > 0 && (
@@ -416,30 +448,33 @@ function ListView({ movies, usernames, pickingId, onPick }: {
               {m.overview && (
                 <p className="text-xs text-[#99AABB]/50 mt-1 line-clamp-2 leading-relaxed">{m.overview}</p>
               )}
-            </div>
+            </button>
 
-            {/* Actions */}
+            {/* Cinema action */}
             <div className="flex-shrink-0 flex items-center gap-2">
               {m.letterboxdUrl && (
-                <a href={m.letterboxdUrl} target="_blank" rel="noopener noreferrer"
+                <a href={m.letterboxdUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
                   className="text-[10px] text-[#00E054]/60 hover:text-[#00E054] transition-colors hidden sm:block">
                   LBD →
                 </a>
               )}
-              <button
-                onClick={() => onPick(m)}
-                disabled={!m.tmdbId || isPicking}
-                className="text-xs px-3 py-1.5 rounded-lg border border-[#2c3440] text-[#99AABB]
-                  hover:border-[#40BCF4]/50 hover:text-[#40BCF4] hover:bg-[#40BCF4]/8
-                  disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150"
-              >
-                {isPicking ? "…" : "Pick"}
+              <button onClick={handleClick}
+                className="text-xs px-3 py-1.5 rounded-lg border transition-all duration-150 whitespace-nowrap"
+                style={state === "found"
+                  ? { borderColor: "#40BCF460", color: "#40BCF4", background: "#40BCF410" }
+                  : state === "not_found"
+                  ? { borderColor: "#2c3440", color: "#99AABB44" }
+                  : { borderColor: "#2c3440", color: "#99AABB" }
+                }>
+                {state === "loading" ? "…"
+                  : state === "found" ? "🎬 Séances"
+                  : state === "not_found" ? "Pas en salle"
+                  : "🎬 En salle ?"}
               </button>
             </div>
           </div>
-        );
-      })}
-    </div>
+      {modalOpen && movie && <CinemaSessionModal movie={movie} onClose={() => setModalOpen(false)} />}
+    </>
   );
 }
 
