@@ -129,7 +129,8 @@ export default function ParisAllMovies() {
   /* ── modal ── */
   const [modalMovie, setModalMovie] = useState<AllMovie | null>(null);
 
-  const sortRef = useRef<HTMLDivElement>(null);
+  const sortRef    = useRef<HTMLDivElement>(null);
+  const genreRef   = useRef<HTMLDivElement>(null);
 
   /* close sort dropdown on outside click */
   useEffect(() => {
@@ -138,6 +139,19 @@ export default function ParisAllMovies() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  /* convert vertical wheel → horizontal scroll on the genre row */
+  useEffect(() => {
+    const el = genreRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // already horizontal (trackpad)
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
   /* ── fetch all movies ── */
@@ -367,7 +381,7 @@ export default function ParisAllMovies() {
 
         {/* Row 3 — genre pills */}
         {genresLoading && !genresFetched && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar">
+          <div ref={genreRef} className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar">
             <span className="text-[10px] uppercase tracking-widest text-[#99AABB]/40 flex-shrink-0 font-semibold">Genres</span>
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="flex-shrink-0 h-6 rounded-full bg-[#1c2228] animate-pulse"
@@ -376,25 +390,45 @@ export default function ParisAllMovies() {
           </div>
         )}
         {genresFetched && genreOptions.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar">
-            <span className="text-[10px] uppercase tracking-widest text-[#99AABB]/40 flex-shrink-0 font-semibold">Genres</span>
-            {genreOptions.map(({ name, count }) => {
-              const color   = GENRE_COLORS[name] ?? DEFAULT_GENRE_COLOR;
-              const isActive = selectedGenres.has(name);
-              return (
-                <button key={name} onClick={() => toggleGenre(name)}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold
-                    border transition-all whitespace-nowrap"
-                  style={{
-                    background:  isActive ? `${color}22` : "#1c2228",
-                    borderColor: isActive ? `${color}70` : "#2c3440",
-                    color:       isActive ? color          : "#99AABB",
-                  }}>
-                  {name}
-                  <span className="text-[9px] opacity-60">{count}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-1">
+            {/* Left arrow */}
+            <button onClick={() => { genreRef.current && (genreRef.current.scrollLeft -= 160); }}
+              className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full
+                border border-[#2c3440] bg-[#1c2228] text-[#99AABB] hover:text-[#e8ecf0]
+                hover:border-[#F59E0B]/40 transition-all">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+
+            {/* Scrollable pills */}
+            <div ref={genreRef} className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar flex-1"
+              style={{ scrollBehavior: "smooth" }}>
+              <span className="text-[10px] uppercase tracking-widest text-[#99AABB]/40 flex-shrink-0 font-semibold">Genres</span>
+              {genreOptions.map(({ name, count }) => {
+                const color    = GENRE_COLORS[name] ?? DEFAULT_GENRE_COLOR;
+                const isActive = selectedGenres.has(name);
+                return (
+                  <button key={name} onClick={() => toggleGenre(name)}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold
+                      border transition-all whitespace-nowrap"
+                    style={{
+                      background:  isActive ? `${color}22` : "#1c2228",
+                      borderColor: isActive ? `${color}70` : "#2c3440",
+                      color:       isActive ? color         : "#99AABB",
+                    }}>
+                    {name}
+                    <span className="text-[9px] opacity-60">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Right arrow */}
+            <button onClick={() => { genreRef.current && (genreRef.current.scrollLeft += 160); }}
+              className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full
+                border border-[#2c3440] bg-[#1c2228] text-[#99AABB] hover:text-[#e8ecf0]
+                hover:border-[#F59E0B]/40 transition-all">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
         )}
       </div>

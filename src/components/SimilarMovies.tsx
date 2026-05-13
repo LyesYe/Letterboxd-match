@@ -30,15 +30,31 @@ export default function SimilarMovies({ movieId, onSelect }: Props) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-xs font-semibold tracking-widest uppercase text-[#99AABB] mb-3 px-1">
-        Similar Films
-      </h3>
+      <div className="flex items-center justify-between mb-3 px-1">
+        <h3 className="text-xs font-semibold tracking-widest uppercase text-[#99AABB]">
+          Similar Films
+        </h3>
+        <div className="flex gap-1">
+          <button onClick={() => { scrollRef.current && (scrollRef.current.scrollLeft -= 200); }}
+            className="w-7 h-7 flex items-center justify-center rounded-full
+              border border-[#2c3440] bg-[#1c2228] text-[#99AABB] hover:text-[#e8ecf0]
+              hover:border-[#00E054]/40 transition-all">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button onClick={() => { scrollRef.current && (scrollRef.current.scrollLeft += 200); }}
+            className="w-7 h-7 flex items-center justify-center rounded-full
+              border border-[#2c3440] bg-[#1c2228] text-[#99AABB] hover:text-[#e8ecf0]
+              hover:border-[#00E054]/40 transition-all">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
 
       {/* Scrollable row */}
       <div
         ref={scrollRef}
         className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"
-        style={{ scrollbarWidth: "none" }}
+        style={{ scrollbarWidth: "none", scrollBehavior: "smooth" }}
       >
         {loading
           ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
