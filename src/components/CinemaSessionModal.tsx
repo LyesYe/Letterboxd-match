@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Showtime } from "@/app/api/paris-cinema/showtimes/route";
 
 export interface CinemaMovie {
+  hasToday?: boolean;
   pciId:     number;
   title:     string;
   year:      string;
@@ -83,6 +84,11 @@ export default function CinemaSessionModal({ movie, selcard = "all", onClose }: 
                     🎬 En salle à Paris
                   </span>
                   <span className="text-[10px] text-[#99AABB]/50">{movie.copies} cinéma{movie.copies > 1 ? "s" : ""}</span>
+                  {movie.hasToday && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400">
+                      Aujourd&apos;hui
+                    </span>
+                  )}
                 </>
               )}
             </div>

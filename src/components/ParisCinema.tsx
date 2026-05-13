@@ -6,6 +6,7 @@ import { Showtime } from "@/app/api/paris-cinema/showtimes/route";
 import { useUsernameHistory } from "@/hooks/useUsernameHistory";
 
 interface AllMovie {
+  hasToday: boolean;
   pciId: number; title: string; year: string; duration: string; director: string;
   copies: number; lbSlug: string; lbUrl: string; pciUrl: string; posterUrl: string;
 }
@@ -173,7 +174,7 @@ export default function ParisCinema({ defaultUsername = "", onDataLoaded }: Prop
   );
 }
 
-type CardMovie = { pciId: number; title: string; year: string; duration: string; director: string; copies: number; lbUrl: string; pciUrl: string; posterUrl: string };
+type CardMovie = { hasToday?: boolean; pciId: number; title: string; year: string; duration: string; director: string; copies: number; lbUrl: string; pciUrl: string; posterUrl: string };
 
 /* ── Poster card — opens a full-screen modal on click ── */
 function MovieCard({ movie, selcard = "all" }: { movie: CardMovie; selcard?: string }) {
@@ -192,6 +193,12 @@ function MovieCard({ movie, selcard = "all" }: { movie: CardMovie; selcard?: str
           <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-[#40BCF4] text-[#0d1014]">
             {movie.copies} {movie.copies === 1 ? "cinéma" : "cinémas"}
           </div>
+          {movie.hasToday && (
+            <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500 text-white"
+              style={{ boxShadow: "0 0 8px rgba(239,68,68,0.6)" }}>
+              Aujourd&apos;hui
+            </div>
+          )}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-semibold bg-black/70 px-2.5 py-1 rounded-full">
               Séances →

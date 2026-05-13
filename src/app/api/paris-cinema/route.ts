@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { WatchlistMovie } from "@/types";
 
-const PCI_BASE = "https://paris-cine.info/get_pcimovies.php?selday=all&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
-const pciUrl = (selcard: string) => `${PCI_BASE}&selcard=${selcard}`;
+const PCI_BASE  = "https://paris-cine.info/get_pcimovies.php?selday=all&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
+const PCI_TODAY = "https://paris-cine.info/get_pcimovies.php?selday=today&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
+const pciUrl      = (selcard: string) => `${PCI_BASE}&selcard=${selcard}`;
+const pciTodayUrl = (selcard: string) => `${PCI_TODAY}&selcard=${selcard}`;
 const HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   Accept: "application/json, text/javascript, */*",
@@ -15,6 +17,7 @@ const LB_HEADERS = {
 };
 
 export interface CinemaMatch {
+  hasToday:    boolean;
   pciId:       number;
   title:       string;
   year:        string;
@@ -68,11 +71,17 @@ export async function POST(req: NextRequest) {
   const { usernames, selcard = "all" }: { usernames: string[]; selcard?: string } = await req.json();
   if (!usernames?.length) return NextResponse.json({ error: "Username required." }, { status: 400 });
 
-  // Fetch all in parallel
-  const [cinemaMovies, ...watchlists] = await Promise.all([
+  // Fetch all in parallel — week + today + watchlists
+  const [cinemaMovies, todayMoviesRaw, ...watchlists] = await Promise.all([
     fetchParisCinema(selcard),
+    fetch(pciTodayUrl(selcard), { headers: HEADERS, next: { revalidate: 1800 } })
+      .then((r) => r.text())
+      .then((t) => { try { return JSON.parse(t.replace(/^[^{]*/,"")).data ?? []; } catch { return []; } })
+      .catch(() => []),
     ...usernames.map((u) => fetchWatchlist(u, req.nextUrl.origin)),
   ]);
+
+  const todayIds = new Set<number>((todayMoviesRaw as { id: number }[]).map((m) => m.id));
 
   if (!cinemaMovies.length) return NextResponse.json({ error: "Could not fetch Paris cinema schedule." }, { status: 502 });
 
@@ -94,6 +103,7 @@ export async function POST(req: NextRequest) {
     const entry = slugToUsers.get(cm.lb_u);
     if (!entry) continue;
     matches.push({
+      hasToday:      todayIds.has(cm.id),
       pciId:         cm.id,
       title:         cm.ti,
       year:          cm.ye,
@@ -109,11 +119,14 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Sort: most copies (most cinemas) first
-  matches.sort((a, b) => b.copies - a.copies);
+  // Sort: today first, then by number of copies
+  const todayScore = (m: { hasToday: boolean; copies: number }) =>
+    (m.hasToday ? 1_000_000 : 0) + m.copies;
+  matches.sort((a, b) => todayScore(b) - todayScore(a));
 
   // Also expose all cinema movies (for the "show all" view)
   const allMovies = cinemaMovies.map((cm) => ({
+    hasToday:  todayIds.has(cm.id),
     pciId:    cm.id,
     title:    cm.ti,
     year:     cm.ye,
@@ -124,7 +137,7 @@ export async function POST(req: NextRequest) {
     lbUrl:    cm.lb_u ? `https://letterboxd.com/film/${cm.lb_u}/` : "",
     pciUrl:   `https://paris-cine.info/#${cm.lb_u}`,
     posterUrl: `https://paris-cine.info/get_poster.php?id=${cm.id}`,
-  }));
+  })).sort((a, b) => todayScore(b) - todayScore(a));
 
   return NextResponse.json({ matches, allMovies, total: cinemaMovies.length });
 }
