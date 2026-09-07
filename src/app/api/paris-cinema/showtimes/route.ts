@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const selcard = req.nextUrl.searchParams.get("selcard") ?? "all";
   if (!movId) return NextResponse.json({ error: "mov_id required" }, { status: 400 });
 
-  const url = `https://paris-cine.info/get_pcishowtimes.php?mov_id=${movId}&selday=all&selcard=${selcard}&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=`;
+  const url = `https://paris-cine.info/get_showtimes.php?mov_id=${movId}&selday=all&selcard=${selcard}&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=`;
   try {
     const res  = await fetch(url, { headers: HEADERS, next: { revalidate: 1800 } });
     const text = await res.text();

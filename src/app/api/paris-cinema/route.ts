@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { WatchlistMovie } from "@/types";
 
-const PCI_BASE  = "https://paris-cine.info/get_pcimovies.php?selday=all&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
-const PCI_TODAY = "https://paris-cine.info/get_pcimovies.php?selday=today&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
+const PCI_BASE  = "https://paris-cine.info/get_movies.php?selday=all&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
+const PCI_TODAY = "https://paris-cine.info/get_movies.php?selday=today&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
 const pciUrl      = (selcard: string) => `${PCI_BASE}&selcard=${selcard}`;
 const pciTodayUrl = (selcard: string) => `${PCI_TODAY}&selcard=${selcard}`;
 const HEADERS = {

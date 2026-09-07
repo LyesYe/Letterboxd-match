@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CinemaMovie } from "@/components/CinemaSessionModal";
 
-const PCI_BASE  = "https://paris-cine.info/get_pcimovies.php?selday=all&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
-const PCI_TODAY = "https://paris-cine.info/get_pcimovies.php?selday=today&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
+const PCI_BASE  = "https://paris-cine.info/get_movies.php?selday=all&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
+const PCI_TODAY = "https://paris-cine.info/get_movies.php?selday=today&seldayid=&seladdr=&seltime=&selformat=&selevent=&selcine=&sellang=";
 const HEADERS   = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   Accept: "application/json, */*",
